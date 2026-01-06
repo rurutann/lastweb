@@ -24,7 +24,7 @@ export default function RPSGame() {
       setResult("負け…");
     }
   };
-
+  
   return (
     <>
       <p>手を選んでください:</p>

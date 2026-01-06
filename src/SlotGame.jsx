@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import watermelon from "./watermelon.png";
 import grape from "./budou.png";
 import cherry from "./cherry.png";
@@ -9,29 +9,23 @@ const symbols = [
   { name: "さくらんぼ", img: cherry },
 ];
 
-export default function SlotGame({ onBack }) {
-  // 各リールの現在位置（index）
+export default function SlotGame({ bet, coin, setCoin, onBack }) {
   const [reels, setReels] = useState([0, 0, 0]);
-
-  // 各リールが止まっているか
   const [stopped, setStopped] = useState([true, true, true]);
-
-  // 回転中かどうか（START制御用）
   const [isSpinning, setIsSpinning] = useState(false);
-
-  // 結果表示
   const [result, setResult] = useState("");
-
-  // interval 管理
   const timers = useRef([null, null, null]);
 
   // STARTボタン
   const start = () => {
-    if (isSpinning) return; // 二重START防止
+    if (isSpinning || bet > coin) return;
 
     setResult("");
     setIsSpinning(true);
     setStopped([false, false, false]);
+
+    // 賭け金を先に引く
+    setCoin((c) => c - bet);
 
     timers.current.forEach((_, i) => {
       timers.current[i] = setInterval(() => {
@@ -57,25 +51,32 @@ export default function SlotGame({ onBack }) {
     });
   };
 
-  // 全部止まったら結果判定
+  // 結果判定（1回のみ）
   useEffect(() => {
-    if (stopped.every(Boolean) && isSpinning) {
-      setIsSpinning(false);
+    if (!isSpinning) return;
+    if (!stopped.every(Boolean)) return;
 
-      const [a, b, c] = reels;
-      if (a === b && b === c) {
-        setResult("🎉 大当たり！ 🎉");
-      } else {
-        setResult("残念…");
-      }
+    setIsSpinning(false);
+
+    const [a, b, c] = reels;
+
+    if (a === b && b === c) {
+      setResult("🎉 大当たり！5倍獲得！ 🎉");
+      setCoin((coin) => coin + bet * 5);
+    } else {
+      setResult("残念…");
     }
-  }, [stopped, reels, isSpinning]);
+  }, [stopped, reels, isSpinning, bet, setCoin]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "40px" }}>
       <h1>スロットゲーム</h1>
 
-      {/* リール表示 */}
+      <p style={{ fontSize: "22px" }}>所持コイン：{coin}</p>
+      <p style={{ fontSize: "18px" }}>賭け金：{bet}</p>
+      <p style={{ fontSize: "18px" }}>揃えば：{bet * 5} コイン</p>
+
+      {/* リール */}
       <div
         style={{
           display: "flex",
@@ -93,37 +94,46 @@ export default function SlotGame({ onBack }) {
             />
             <br />
             <button
-            onClick={() => stopReel(i)}
-            disabled={!isSpinning || stopped[i]}
-            style={{
+              onClick={() => stopReel(i)}
+              disabled={!isSpinning || stopped[i]}
+              style={{
                 marginTop: "50px",
-                width: "120px",      // ← 横幅 
-                height: "50px",      // ← 高さ
-                fontSize: "20px",    // ← 文字サイズ
-                fontWeight: "bold", // ← 文字太さ
-                }}
-                >
-                    STOP
-                    </button>
-
+                width: "160px",
+                height: "70px",
+                fontSize: "26px",
+                fontWeight: "bold",
+              }}
+            >
+              STOP
+            </button>
           </div>
         ))}
       </div>
 
-      {/* START */}
+      {/* STARTボタン（半分サイズ） */}
       <button
         onClick={start}
-        disabled={isSpinning}
-        style={{ fontSize: "18px", padding: "5px 20px" }}
+        disabled={isSpinning || bet > coin}
+        style={{
+          fontSize: "12px",      // 半分
+          padding: "6px 20px",   // 半分
+        }}
       >
         START
       </button>
 
-      {/* 結果 */}
+      {/* 結果表示 */}
       {result && <h2 style={{ marginTop: "20px" }}>{result}</h2>}
 
-      {/* 戻る */}
-      <button onClick={onBack} style={{ marginTop: "20px" }}>
+      {/* ホームに戻る（半分サイズ） */}
+      <button
+        onClick={onBack}
+        style={{
+          marginTop: "20px",
+          fontSize: "10px",      // 半分
+          padding: "5px 15px",   // 半分
+        }}
+      >
         ホームに戻る
       </button>
     </div>

@@ -4,7 +4,7 @@ import useCoin from "./useCoin";
 import NumberGuessGame from "./NumberGuessGame";
 import SlotGame from "./SlotGame";
 import SprGame from "./sprgame";
-import BlackJGame from "./BlackJGame";
+import BlackJGame from "./BlackjGame";
 import DartGame from "./DarGame";
 
 import slotImg from "./slot.png";
